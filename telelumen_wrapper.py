@@ -193,26 +193,6 @@ def disconnect_telelumen(lum) -> bool:
         print("-> Connection not closed \n")
         return False
     
-def from13to24(vec):
-    #[UV1, UV2, V1, V2, RB1, RB2, B1, B2, C, G1, G2, L, PC-A, A, OR, R1, R2, DR1, DR2, FR1, FR2, FR3, IR1, IR2]
-
-    return [.0, .0, .0, .0, vec[0], vec[1], vec[2], vec[3], vec[4], vec[5], vec[6], vec[7], vec[8], vec[9] , vec[10], vec[11], vec[12], .0, .0, .0, .0, .0, .0, .0]
-    
-def light(lum, vec):
-    result=lum.set_drive_levels(vec)        
-    if (result != 0):
-        print("TELELUMEN ERROR : " + str(result))
-    return result
-
-def light_off(lum):
-    
-    vec = [ .0, .0, .0, .0, .0, .0, .0, .0, .0, .0, .0, .0, .0, .0 , .0, .0, .0, .0, .0, .0, .0, .0, .0, .0 ]
-    lum.set_drive_levels(vec)
-
-def get_temperature(lum):
-    s = lum.get_temperature()
-    return float(s)
-
 if __name__ == "__main__":
     
     lum = connect_luminaire_from_list()

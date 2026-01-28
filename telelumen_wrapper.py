@@ -19,6 +19,10 @@ def discover_luminaires() -> list | None:
             print("No luminaires found")
             return None    
         
+        print(f"-> Found {len(lum_list)} luminaire(s)\n")
+        for lum in lum_list :
+            serial = lum.get_electronic_serial_number()
+            print(f"  IP: {lum.address} | Serial: {serial}")    
         return lum_list
     
     except :
@@ -186,7 +190,7 @@ def disconnect_telelumen(lum) -> bool:
         print("-> Connection closed for " + l.address)
         return True
     except :
-        print("Connection not closed \n")
+        print("-> Connection not closed \n")
         return False
     
 def from13to24(vec):
@@ -211,5 +215,6 @@ def get_temperature(lum):
 
 if __name__ == "__main__":
     
-    # Example 1: Discover luminaires
-    discover_luminaires()
+    lum = connect_luminaire_from_list()
+    if (lum is not None) :
+        disconnect_telelumen(lum)

@@ -180,18 +180,14 @@ def connect_luminaire_by_serial(serial_number):
         print(f"-> Connection failed: {e}\n")
         return None
     
-def disconnect_telelumen(lum) -> bool: 
+def disconnect_telelumen(lum) -> int: 
     try :
         if (isinstance (lum, list)) :
-            for l in lum :
-                api.closeLuminaire(l.address)
+            return api.closeList(lum)
         
-        api.closeLuminaire(lum.address)
-        print("-> Connection closed for " + l.address)
-        return True
+        return api.closeLuminaire(lum.address)
     except :
-        print("-> Connection not closed \n")
-        return False
+        return -1
     
 if __name__ == "__main__":
     

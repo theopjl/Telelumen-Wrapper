@@ -210,23 +210,37 @@ def closeLuminaire(ip):
         luminaireNetwork = '0.0.0.'
         luminaire_list = []
         luminaireTask = [0 for i in range(0, 256)]
+        print("-> Connection closed for " + ip  + '\n')
         return 0
     except:
         err = str(sys.exc_info())
         db.log_exception('api_tng.closeLuminaire()', err)
+        print("-> Connection not closed for " + ip + '\n')
         return -1
 
 
 # Given a list of luminaire full IP addresses, close all of them
-def closeList(hostlist):
+def closeListIp(hostlist):
     global db
     try:
         for host_ip in hostlist:
             closeLuminaire(host_ip)
     except:
         err = str(sys.exc_info())
-        db.log_exception('api_tng.closeList()', err)
+        db.log_exception('api_tng.closeListIp()', err)
+
+
+def closeList(lum):
+    global db
+    try :
+        for l in lum :
+            closeLuminaire(l.address)
+    except :
+        err = str(sys.exc_info())
+        db.log_exception('api_tng.closeList(lums)', err)
         
+
+
 # Get a standard luminaire reply, which always ends in (and does not otherwise
 # contain) a semicolon:
 def getReply(ip):

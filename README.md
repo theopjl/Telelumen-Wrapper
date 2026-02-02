@@ -21,5 +21,6 @@ This wrapper simplifies interactions with Telelumen luminaires by providing easy
 
 ## Requirements
 
-- Python 3.x
+- Python 3.12
 - `api_tng` module (Telelumen API)
+- packages in `requirements.txt`

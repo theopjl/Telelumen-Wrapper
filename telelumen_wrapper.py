@@ -8,7 +8,7 @@ info:
     Telelumen Wrapper to facilitate luminaire discovery and connection.
 """
 
-import api_tng as api
+import api.api_tng as api
 
 
 class Telelumen:

@@ -1,4 +1,4 @@
-import api_tng as api
+import api.api_tng as api
 from telelumen_wrapper import Telelumen
 
 lums = Telelumen.discover_luminaires()

@@ -45,7 +45,7 @@ The wrapper provides:
 
 ```bash
 # Install required packages
-pip install paho-mqtt
+pip install -r /path/to/requirements.txt
 ```
 
 ### File Structure
@@ -54,6 +54,11 @@ pip install paho-mqtt
 Telelumen-Wrapper/
 ├── api/
 │   └── api_tng.py          # Manufacturer's API
+├── docs/
+│   ├── API_TNG_DOCUMENTATION.md                   # Manufacturer's API documentation
+│   └── TELELUMEN_WRAPPER_DOCUMENTATION.md         # This wrapper documentation
+├── examples/
+│   └── quick_start.md       # Quick start example on how to use the wrapper
 ├── telelumen_wrapper.py     # This wrapper
 ├── requirements.txt         # Dependencies
 └── README.md

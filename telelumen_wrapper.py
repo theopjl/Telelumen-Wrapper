@@ -199,7 +199,100 @@ class Telelumen:
             return api.closeLuminaire(lum.address)
         except:
             return -1
+        
+    @staticmethod
+    def get_temperature(lum: api.Luminaire) -> float | None:
+        """
+        Get the temperature of the luminaire.
+        
+        Args:
+            lum: Luminaire object
+        
+        Returns:
+            Temperature in Celsius if successful, None otherwise
+        """
+        try:
+            temp = lum.get_temperature()
+            return temp
+        except:
+            return None
 
+    @staticmethod
+    def light_off(lum: api.Luminaire) -> int | None :
+        """
+        Turn off the luminaire by setting all drive levels to 0.
+        
+        Args:
+            lum: Luminaire object
+        
+        Returns:
+            0 on success, -1 on failure
+        """
+        try:
+            return lum.go_dark()
+        except:
+            return None
+        
+    @staticmethod
+    def light_on(lum: api.Luminaire, brightness: float = 1.0) -> int | None:
+        """
+        Turn on the luminaire by setting all drive levels to the specified brightness.
+        
+        Args:
+            lum: Luminaire object
+            brightness: Brightness level (0.0 to 1.0)
+        
+        Returns:
+            0 on success, -1 on failure
+        """
+        try:
+            num_channels = lum.get_number_of_channels()
+            drive_levels = [brightness] * num_channels
+            return lum.set_drive_levels(drive_levels)
+        except:
+            return None
+        
+    @staticmethod
+    def set_brightness(lum: api.Luminaire, brightness: float) -> int | None:
+        """
+        Set the brightness of the luminaire by adjusting all drive levels.
+        
+        Args:
+            lum: Luminaire object
+            brightness: Brightness level (0.0 to 1.0)
+        
+        Returns:
+            0 on success, -1 on failure
+        """
+        try:
+            num_channels = lum.get_number_of_channels()
+            drive_levels = [brightness] * num_channels
+            return lum.set_drive_levels(drive_levels)
+        except:
+            return None
+        
+    @staticmethod
+    def from13to24(vec):
+    #[UV1, UV2, V1, V2, RB1, RB2, B1, B2, C, G1, G2, L, PC-A, A, OR, R1, R2, DR1, DR2, FR1, FR2, FR3, IR1, IR2]
+
+        return [.0, .0, .0, .0, vec[0], vec[1], vec[2], vec[3], vec[4], vec[5], vec[6], vec[7], vec[8], vec[9] , vec[10], vec[11], vec[12], .0, .0, .0, .0, .0, .0, .0]
+    
+    @staticmethod
+    def set_intensities(lum: api.Luminaire, intensities: list) -> int:
+        """
+        Set the intensities of the luminaire channels.
+        
+        Args:
+            lum: Luminaire object
+            intensities: List of intensity levels (0.0 to 1.0) for each channel
+        
+        Returns:
+            0 on success, -1 on failure
+        """
+        try:
+            return lum.set_drive_levels(Telelumen.from13to24(intensities))
+        except:
+            return -1
 
 if __name__ == "__main__":
     lum = Telelumen.connect_from_list()

@@ -483,7 +483,7 @@ if __name__ == "__main__":
             # time.sleep(2)
             
             print("\nTurning off all...")
-            success_count = Telelumen.light_off_all(luminaires)
+            success_count = Telelumen.light_on_all(luminaires)
             print(f"  -> {success_count}/{len(luminaires)} succeeded")
             
             # Disconnect all

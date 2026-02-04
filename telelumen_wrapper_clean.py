@@ -9,7 +9,7 @@ Maintains backward compatibility with the original wrapper interface.
 """
 
 from typing import Optional, List
-from telelumen_api import TelelumenAPI, Luminaire, Logger
+from api.telelumen_api import TelelumenAPI, Luminaire, Logger
 
 
 class Telelumen:

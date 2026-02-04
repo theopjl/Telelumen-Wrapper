@@ -1,3 +1,9 @@
+import sys
+from pathlib import Path
+
+# Add parent directory to path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 import api.api_tng as api
 from telelumen_wrapper import Telelumen
 
@@ -16,8 +22,11 @@ if (lums is not None) and (len(lums) > 0):
         print(f"Serial: {serial}, Version: {version}")
 
         # Set drive levels to 50% for all channels
-        drive_levels = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]  # 50% brightness
-        lum.set_drive_levels(drive_levels)
+        #drive_levels = [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5]  # 50% brightness
+        #lum.set_drive_levels(drive_levels)
+        lum.go_dark()
+
+        Telelumen.set_brightness(lum, 0.0)
         print("Set drive levels to 50% for all channels.")
 
         # Disconnect from the luminaire

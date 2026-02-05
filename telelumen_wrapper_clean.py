@@ -431,6 +431,44 @@ class Telelumen:
         return [Telelumen.get_info(lum) for lum in luminaires]
 
 
+    @staticmethod
+    def reset(luminaire : Luminaire) -> bool:
+        """
+        Reset a single luminaire to factory settings.
+        
+        Args:
+            luminaire: Luminaire object
+        
+        Returns:
+            True on success, False on failure
+        """
+        try:
+            return luminaire.reset()
+        except Exception as e:
+            print(f"Failed to reset luminaire: {e}")
+            return False
+    
+    @staticmethod
+    def reset_all(luminaires : List[Luminaire]) -> bool:
+        """
+        Reset a single luminaire to factory settings.
+        
+        Args:
+            luminaire: Luminaire object
+        
+        Returns:
+            True on success, False on failure
+        """
+        try:
+            for luminaire in luminaires:
+                luminaire.reset()
+            return True
+        except Exception as e:
+            print(f"Failed to reset luminaire: {e}")
+            return False
+
+
+
 if __name__ == "__main__":
     # Example usage
     print("Telelumen Wrapper - Clean API Version\n")

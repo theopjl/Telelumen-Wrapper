@@ -33,7 +33,6 @@ if __name__ == "__main__":
                 print("\n=== Testing Multiple Luminaires ===")
                 luminaires = result
 
-
                 while True:
                     print("Turning on...")
                     Telelumen.light_off_all(luminaires)
@@ -46,9 +45,11 @@ if __name__ == "__main__":
             print("\nInterrupted by user, disconnecting...")
             if isinstance(result, list):
                 luminaires = result
+                Telelumen.reset_all(luminaires)
                 count = Telelumen.disconnect_all(luminaires)
                 print(f"Disconnected {count}/{len(luminaires)} luminaires")
             else:
                 lum = result
+                Telelumen.reset(lum)
                 Telelumen.disconnect(lum)
                 print("Disconnected")

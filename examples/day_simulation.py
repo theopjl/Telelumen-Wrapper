@@ -36,8 +36,13 @@ INTERPOLATION_STEPS = 16
 #   ~8000-20000K → cool blue                      → night, blue hour
 
 PRESETS_8CH = {
-    # Night - Very dark, slight blue (moonlight / starlight, ~15 000K)
-    "night": [0.04, 0.06, 0.03, 0.01, 0.0, 0.0, 0.0, 0.0],
+    # Night phases - progressive transition from deep blue to pre-dawn warmth
+    # [Royal Blue, Blue, Cyan, Green, Yellow, Amber, Orange, Red]
+    "night":         [0.06, 0.04, 0.01, 0.0,  0.0,  0.0,  0.0,  0.0 ],  # pure deep blue
+    "night_start":   [0.06, 0.04, 0.01, 0.0,  0.0,  0.0,  0.0,  0.0 ],  # = night (opening)
+    "night_mid":     [0.04, 0.03, 0.0,  0.0,  0.0,  0.01, 0.02, 0.01],  # very first warmth hint
+    "night_pre_dawn":[0.01, 0.01, 0.0,  0.0,  0.01, 0.03, 0.06, 0.05],  # bridge to dawn_start
+    "night_end":     [0.06, 0.04, 0.01, 0.0,  0.0,  0.0,  0.0,  0.0 ],  # = night (closing)
 
     # Dawn - First light on the horizon, very dim warm orange (~1500-2500K)
     "dawn_start": [0.0, 0.0, 0.0, 0.0, 0.01, 0.06, 0.12, 0.10],
@@ -69,8 +74,8 @@ PRESETS_8CH = {
     "blue_hour_mid":   [0.22, 0.38, 0.22, 0.02, 0.0, 0.0, 0.02, 0.01],
     "blue_hour_end":   [0.12, 0.20, 0.10, 0.01, 0.0, 0.0, 0.01, 0.0],
 
-    # Evening - Fading back to night blue
-    "evening": [0.06, 0.10, 0.05, 0.01, 0.0, 0.0, 0.0, 0.0],
+    # Evening - Fading back to deep blue-violet night
+    "evening": [0.03, 0.01, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0],
 }
 
 
@@ -97,21 +102,55 @@ PRESETS_8CH = {
 #   ~8000-20000K → cool blue                      → night, blue hour
 
 PRESETS_24CH = {
-    # Night - Very dark, slight blue (moonlight / starlight, ~15 000K)
+    # Night phases - progressive transition from deep blue to pre-dawn warmth
+
+    # Pure deep blue night (opening & closing)
     "night": [
-        # UVA - off
         0.0, 0.0,
-        # Violet-Blue - subtle blue glow
-        0.03, 0.04, 0.06, 0.06,
-        # Blue-Cyan - slight
+        0.05, 0.06, 0.10, 0.10,
         0.04, 0.04,
-        # Green - barely visible
-        0.01, 0.01, 0.01, 0.0,
-        # Yellow-Orange - off
         0.0, 0.0, 0.0, 0.0,
-        # Red - off
         0.0, 0.0, 0.0, 0.0,
-        # NIR - off
+        0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0
+    ],
+    "night_start": [
+        0.0, 0.0,
+        0.05, 0.06, 0.10, 0.10,
+        0.04, 0.04,
+        0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0
+    ],
+    # Very faint first warmth hint (atmospheric glow on horizon)
+    "night_mid": [
+        0.0, 0.0,
+        0.03, 0.04, 0.06, 0.06,
+        0.02, 0.02,
+        0.0, 0.0, 0.0, 0.0,
+        0.01, 0.01, 0.02, 0.02,
+        0.01, 0.01, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0
+    ],
+    # Bridge between night and dawn - blue fading, very dim warm emerging
+    "night_pre_dawn": [
+        0.0, 0.0,
+        0.01, 0.01, 0.02, 0.02,
+        0.01, 0.01,
+        0.0, 0.0, 0.01, 0.01,
+        0.03, 0.04, 0.08, 0.10,
+        0.08, 0.08, 0.06, 0.06,
+        0.01, 0.01, 0.01, 0.01
+    ],
+    # Closing night (same as night_start)
+    "night_end": [
+        0.0, 0.0,
+        0.05, 0.06, 0.10, 0.10,
+        0.04, 0.04,
+        0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0
     ],
 
@@ -302,14 +341,14 @@ PRESETS_24CH = {
         0.0, 0.0, 0.0, 0.0
     ],
 
-    # Evening - Fading back to night blue
+    # Evening - Fading back to deep blue-violet night
     "evening": [
         0.0, 0.0,
-        0.05, 0.07, 0.10, 0.10,
-        0.05, 0.05,
-        0.0, 0.0, 0.01, 0.01,
-        0.0, 0.0, 0.01, 0.01,
+        0.02, 0.01, 0.01, 0.0,
+        0.0, 0.0,
         0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0, 0.0, 0.0,
+        0.01, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0
     ],
 }
@@ -320,7 +359,9 @@ PRESETS_24CH = {
 # ============================================================================
 
 TIME_ALLOCATION = {
-    "night_start":       (0.02, 0.01),
+    "night_start":       (0.02, 0.02),  # opening deep blue night
+    "night_mid":         (0.03, 0.02),  # very faint warmth begins on horizon
+    "night_pre_dawn":    (0.04, 0.01),  # bridge to dawn
     "dawn_start":        (0.04, 0.02),
     "dawn_mid":          (0.04, 0.02),
     "dawn_end":          (0.03, 0.01),
@@ -481,7 +522,17 @@ if __name__ == "__main__":
             Telelumen.light_on(result, brightness=0.5)
     
     except KeyboardInterrupt:
-        print("\n\nInterrupted!")
+        print("\nInterrupted by user, disconnecting...")
+        if isinstance(result, list):
+            luminaires = result
+            Telelumen.reset_all(luminaires)
+            count = Telelumen.disconnect_all(luminaires)
+            print(f"Disconnected {count}/{len(luminaires)} luminaires")
+        else:
+            lum = result
+            Telelumen.reset(lum)
+            Telelumen.disconnect(lum)
+            print("Disconnected")
     except Exception as e:
         print(f"\nError: {e}")
     finally:

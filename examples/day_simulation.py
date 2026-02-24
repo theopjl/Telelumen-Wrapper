@@ -28,42 +28,49 @@ INTERPOLATION_STEPS = 16
 
 # 8-channel mapping (estimated - verify with your hardware):
 # [Royal Blue, Blue, Cyan, Green, Yellow/Lime, Amber, Orange, Red]
+# Index:  0           1     2     3      4             5      6       7
+#
+# Color temperature reminder:
+#   ~1500-3000K  → warm (red / orange / amber)   → sunrise, sunset, golden hour
+#   ~4000-6500K  → neutral to cool white          → daytime, solar noon
+#   ~8000-20000K → cool blue                      → night, blue hour
 
 PRESETS_8CH = {
-    # Night - Very dark, cool blue tones (moonlight)
-    "night": [0.02, 0.03, 0.02, 0.0, 0.0, 0.0, 0.0, 0.0],
-    
-    # Dawn - Deep blue gradually warming (2000-3000K)
-    "dawn_start": [0.25, 0.35, 0.15, 0.02, 0.0, 0.05, 0.08, 0.02],
-    "dawn_mid": [0.15, 0.25, 0.18, 0.08, 0.05, 0.15, 0.25, 0.12],
-    "dawn_end": [0.08, 0.15, 0.12, 0.18, 0.15, 0.35, 0.50, 0.35],
-    
-    # Sunrise - Warm orange/yellow (2500-4000K)
-    "sunrise_start": [0.02, 0.05, 0.05, 0.25, 0.30, 0.60, 0.85, 0.70],
-    "sunrise_mid": [0.0, 0.02, 0.08, 0.40, 0.50, 0.70, 0.90, 0.75],
-    "sunrise_end": [0.0, 0.05, 0.15, 0.55, 0.65, 0.75, 0.80, 0.70],
-    
-    # Morning - Bright cool white (5500-6500K)
-    "morning": [0.15, 0.20, 0.40, 0.75, 0.85, 0.70, 0.50, 0.55],
-    "afternoon": [0.12, 0.18, 0.38, 0.80, 0.90, 0.75, 0.55, 0.60],
-    
-    # Golden Hour - Warm golden tones, low blue (2000-3000K)
-    "golden_hour_start": [0.0, 0.02, 0.10, 0.55, 0.65, 0.85, 0.95, 0.90],
-    "golden_hour_mid": [0.0, 0.0, 0.05, 0.40, 0.50, 0.90, 1.0, 0.95],
-    "golden_hour_end": [0.0, 0.0, 0.02, 0.30, 0.40, 0.85, 0.95, 0.90],
-    
-    # Sunset - Deep orange to red (1500-2500K)
-    "sunset_start": [0.0, 0.0, 0.02, 0.20, 0.30, 0.75, 0.90, 0.85],
-    "sunset_mid": [0.0, 0.0, 0.0, 0.08, 0.15, 0.60, 0.85, 0.90],
-    "sunset_end": [0.05, 0.08, 0.05, 0.02, 0.05, 0.40, 0.65, 0.70],
-    
-    # Blue Hour - Deep blue twilight
-    "blue_hour_start": [0.25, 0.40, 0.20, 0.05, 0.02, 0.12, 0.20, 0.15],
-    "blue_hour_mid": [0.30, 0.45, 0.22, 0.03, 0.0, 0.05, 0.10, 0.08],
-    "blue_hour_end": [0.20, 0.30, 0.12, 0.02, 0.0, 0.02, 0.05, 0.03],
-    
-    # Evening - Returning to night
-    "evening": [0.08, 0.12, 0.05, 0.0, 0.0, 0.0, 0.02, 0.0],
+    # Night - Very dark, slight blue (moonlight / starlight, ~15 000K)
+    "night": [0.04, 0.06, 0.03, 0.01, 0.0, 0.0, 0.0, 0.0],
+
+    # Dawn - First light on the horizon, very dim warm orange (~1500-2500K)
+    "dawn_start": [0.0, 0.0, 0.0, 0.0, 0.01, 0.06, 0.12, 0.10],
+    "dawn_mid":   [0.0, 0.0, 0.0, 0.01, 0.04, 0.15, 0.28, 0.22],
+    "dawn_end":   [0.0, 0.0, 0.01, 0.04, 0.10, 0.30, 0.50, 0.40],
+
+    # Sunrise - Bright warm orange-yellow (~2000-3500K)
+    "sunrise_start": [0.0, 0.0, 0.0, 0.03, 0.08, 0.55, 0.80, 0.75],
+    "sunrise_mid":   [0.0, 0.0, 0.02, 0.12, 0.25, 0.65, 0.85, 0.65],
+    "sunrise_end":   [0.01, 0.03, 0.10, 0.35, 0.55, 0.65, 0.65, 0.45],
+
+    # Morning - Bright neutral warm white (~4500-5500K)
+    "morning":   [0.05, 0.10, 0.25, 0.70, 0.80, 0.65, 0.45, 0.30],
+    # Solar noon - Bright cool white, peak illumination (~6000-6500K)
+    "afternoon": [0.10, 0.18, 0.40, 0.90, 0.90, 0.70, 0.40, 0.25],
+
+    # Golden Hour - Warm deep golden tones (~2000-3500K)
+    "golden_hour_start": [0.0, 0.01, 0.04, 0.25, 0.45, 0.80, 0.90, 0.70],
+    "golden_hour_mid":   [0.0, 0.0, 0.01, 0.10, 0.28, 0.85, 0.98, 0.82],
+    "golden_hour_end":   [0.0, 0.0, 0.0, 0.04, 0.15, 0.78, 0.95, 0.90],
+
+    # Sunset - Deep warm orange to red (~1500-2200K)
+    "sunset_start": [0.0, 0.0, 0.0, 0.01, 0.05, 0.60, 0.88, 0.95],
+    "sunset_mid":   [0.0, 0.0, 0.0, 0.0, 0.01, 0.35, 0.70, 0.90],
+    "sunset_end":   [0.02, 0.04, 0.02, 0.01, 0.01, 0.18, 0.45, 0.60],
+
+    # Blue Hour - Cool deep blue twilight (~8000-15000K, dimming)
+    "blue_hour_start": [0.18, 0.28, 0.18, 0.04, 0.01, 0.02, 0.06, 0.04],
+    "blue_hour_mid":   [0.22, 0.38, 0.22, 0.02, 0.0, 0.0, 0.02, 0.01],
+    "blue_hour_end":   [0.12, 0.20, 0.10, 0.01, 0.0, 0.0, 0.01, 0.0],
+
+    # Evening - Fading back to night blue
+    "evening": [0.06, 0.10, 0.05, 0.01, 0.0, 0.0, 0.0, 0.0],
 }
 
 
@@ -74,220 +81,234 @@ PRESETS_8CH = {
 # 24-channel mapping includes UVA, visible spectrum, and NIR
 # Exact mapping depends on your Light Replicator model
 # This is a general template - adjust based on your hardware specs
+#
+# Channel groups (indices):
+#   UVA          365-400 nm   ch  0,  1
+#   Violet-Blue  400-480 nm   ch  2,  3,  4,  5
+#   Blue-Cyan    480-510 nm   ch  6,  7
+#   Green        510-560 nm   ch  8,  9, 10, 11
+#   Yellow-Orng  560-620 nm   ch 12, 13, 14, 15
+#   Red          620-700 nm   ch 16, 17, 18, 19
+#   NIR          700-1000 nm  ch 20, 21, 22, 23
+#
+# Color temperature reminder:
+#   ~1500-3000K  → warm (red / orange / amber)   → sunrise, sunset, golden hour
+#   ~4000-6500K  → neutral to cool white          → daytime, solar noon
+#   ~8000-20000K → cool blue                      → night, blue hour
 
 PRESETS_24CH = {
-    # Night - Very dark, cool blue moonlight (minimal intensity)
+    # Night - Very dark, slight blue (moonlight / starlight, ~15 000K)
     "night": [
-        # UVA (365-400nm) - off
+        # UVA - off
         0.0, 0.0,
-        # Violet-Blue (400-480nm) - minimal blue
-        0.01, 0.02, 0.03, 0.03,
-        # Blue-Cyan (480-510nm) - slight blue
-        0.02, 0.02,
-        # Green (510-560nm) - off
+        # Violet-Blue - subtle blue glow
+        0.03, 0.04, 0.06, 0.06,
+        # Blue-Cyan - slight
+        0.04, 0.04,
+        # Green - barely visible
+        0.01, 0.01, 0.01, 0.0,
+        # Yellow-Orange - off
         0.0, 0.0, 0.0, 0.0,
-        # Yellow-Orange (560-620nm) - off
+        # Red - off
         0.0, 0.0, 0.0, 0.0,
-        # Red (620-700nm) - off
-        0.0, 0.0, 0.0, 0.0,
-        # NIR (700-1000nm) - off
+        # NIR - off
         0.0, 0.0, 0.0, 0.0
     ],
-    
-    # Dawn Start - Deep blue with hints of warm (2000-2500K)
+
+    # Dawn Start - First light on the horizon, very dim warm (~1500K)
     "dawn_start": [
         0.0, 0.0,
-        0.18, 0.25, 0.35, 0.35,
-        0.15, 0.15,
-        0.02, 0.02, 0.0, 0.0,
-        0.0, 0.02, 0.05, 0.08,
-        0.02, 0.02, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0
+        0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0,
+        0.0, 0.0, 0.01, 0.01,
+        0.04, 0.06, 0.10, 0.12,
+        0.10, 0.10, 0.08, 0.08,
+        0.01, 0.01, 0.02, 0.02
     ],
-    
-    # Dawn Mid - Blue reducing, warm increasing (2500-3000K)
+
+    # Dawn Mid - Growing warm orange (~2000K)
     "dawn_mid": [
         0.0, 0.0,
-        0.12, 0.15, 0.25, 0.25,
-        0.18, 0.18,
-        0.05, 0.08, 0.08, 0.05,
-        0.10, 0.15, 0.20, 0.25,
-        0.12, 0.12, 0.08, 0.08,
-        0.0, 0.0, 0.0, 0.0
+        0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0,
+        0.01, 0.01, 0.02, 0.02,
+        0.12, 0.15, 0.22, 0.28,
+        0.22, 0.22, 0.18, 0.18,
+        0.02, 0.02, 0.03, 0.03
     ],
-    
-    # Dawn End - Warm colors dominating (3000-4000K)
+
+    # Dawn End - Moderate warm orange-yellow (~2500K)
     "dawn_end": [
         0.0, 0.0,
-        0.05, 0.08, 0.15, 0.15,
-        0.12, 0.12,
-        0.15, 0.18, 0.18, 0.15,
-        0.30, 0.35, 0.45, 0.50,
-        0.35, 0.35, 0.30, 0.30,
-        0.02, 0.02, 0.02, 0.02
+        0.0, 0.0, 0.0, 0.01,
+        0.01, 0.01,
+        0.03, 0.04, 0.06, 0.08,
+        0.25, 0.30, 0.42, 0.50,
+        0.40, 0.40, 0.35, 0.35,
+        0.04, 0.04, 0.06, 0.06
     ],
-    
-    # Sunrise Start - Orange/yellow dominant (2500-3500K)
+
+    # Sunrise Start - Bright warm orange (~2000-2500K)
     "sunrise_start": [
         0.0, 0.0,
-        0.0, 0.02, 0.05, 0.05,
-        0.05, 0.05,
-        0.20, 0.25, 0.30, 0.30,
-        0.55, 0.60, 0.75, 0.85,
-        0.70, 0.70, 0.65, 0.65,
-        0.05, 0.05, 0.08, 0.08
+        0.0, 0.0, 0.0, 0.0,
+        0.0, 0.0,
+        0.02, 0.03, 0.05, 0.05,
+        0.50, 0.55, 0.72, 0.82,
+        0.75, 0.75, 0.68, 0.68,
+        0.06, 0.06, 0.08, 0.08
     ],
-    
-    # Sunrise Mid - Bright warm (3500-4500K)
+
+    # Sunrise Mid - Bright warm orange-yellow (~2500-3500K)
     "sunrise_mid": [
         0.0, 0.0,
-        0.0, 0.0, 0.02, 0.02,
-        0.08, 0.08,
-        0.35, 0.40, 0.50, 0.50,
-        0.65, 0.70, 0.80, 0.90,
-        0.75, 0.75, 0.70, 0.70,
+        0.0, 0.0, 0.01, 0.02,
+        0.06, 0.06,
+        0.12, 0.15, 0.22, 0.25,
+        0.60, 0.65, 0.78, 0.88,
+        0.65, 0.65, 0.58, 0.58,
         0.08, 0.08, 0.10, 0.10
     ],
-    
-    # Sunrise End - Transitioning to daylight (4500-5500K)
+
+    # Sunrise End - Transitioning toward daylight (~3500-5000K)
     "sunrise_end": [
         0.01, 0.01,
-        0.0, 0.05, 0.05, 0.08,
-        0.15, 0.15,
-        0.50, 0.55, 0.65, 0.65,
-        0.70, 0.75, 0.75, 0.80,
-        0.70, 0.70, 0.65, 0.65,
-        0.10, 0.10, 0.12, 0.12
+        0.02, 0.04, 0.06, 0.08,
+        0.14, 0.14,
+        0.32, 0.38, 0.52, 0.58,
+        0.65, 0.70, 0.72, 0.78,
+        0.55, 0.55, 0.48, 0.48,
+        0.08, 0.08, 0.10, 0.10
     ],
-    
-    # Morning - Bright cool white daylight (5500-6500K)
+
+    # Morning - Bright neutral warm white (~4500-5500K)
     "morning": [
-        0.02, 0.02,  # UVA for realism
-        0.12, 0.15, 0.20, 0.20,
-        0.35, 0.40,
-        0.70, 0.75, 0.80, 0.85,
-        0.80, 0.85, 0.70, 0.70,
-        0.55, 0.55, 0.50, 0.50,
-        0.05, 0.05, 0.08, 0.08
+        0.02, 0.02,
+        0.08, 0.10, 0.16, 0.18,
+        0.32, 0.35,
+        0.68, 0.72, 0.78, 0.82,
+        0.80, 0.82, 0.70, 0.70,
+        0.52, 0.52, 0.46, 0.46,
+        0.05, 0.05, 0.07, 0.07
     ],
-    
-    # Afternoon - Bright slightly warm (5000-6000K)
+
+    # Afternoon - Solar noon, bright cool white (~6000-6500K, peak UVA)
     "afternoon": [
-        0.03, 0.03,  # Peak UVA (midday)
-        0.10, 0.12, 0.18, 0.18,
-        0.35, 0.38,
-        0.75, 0.80, 0.85, 0.90,
-        0.85, 0.90, 0.75, 0.75,
-        0.60, 0.60, 0.55, 0.55,
+        0.04, 0.04,
+        0.12, 0.16, 0.22, 0.22,
+        0.40, 0.42,
+        0.82, 0.88, 0.92, 0.95,
+        0.88, 0.90, 0.74, 0.74,
+        0.52, 0.52, 0.46, 0.46,
         0.08, 0.08, 0.12, 0.12
     ],
-    
-    # Golden Hour Start - Warm golden (2500-3500K)
+
+    # Golden Hour Start - Warm deep golden (~3000-3500K)
     "golden_hour_start": [
         0.01, 0.01,
-        0.0, 0.0, 0.02, 0.05,
-        0.08, 0.10,
-        0.50, 0.55, 0.60, 0.65,
-        0.80, 0.85, 0.90, 0.95,
-        0.90, 0.90, 0.85, 0.85,
-        0.12, 0.12, 0.15, 0.15
+        0.0, 0.0, 0.02, 0.04,
+        0.06, 0.08,
+        0.22, 0.28, 0.40, 0.48,
+        0.78, 0.82, 0.88, 0.95,
+        0.88, 0.88, 0.80, 0.80,
+        0.12, 0.12, 0.16, 0.16
     ],
-    
-    # Golden Hour Mid - Peak warm golden (2000-3000K)
+
+    # Golden Hour Mid - Deep golden (~2000-2800K)
     "golden_hour_mid": [
         0.0, 0.0,
-        0.0, 0.0, 0.0, 0.02,
-        0.05, 0.05,
-        0.35, 0.40, 0.50, 0.50,
-        0.85, 0.90, 0.95, 1.0,
-        0.95, 0.95, 0.90, 0.90,
-        0.15, 0.15, 0.20, 0.20
+        0.0, 0.0, 0.0, 0.01,
+        0.02, 0.02,
+        0.08, 0.12, 0.20, 0.25,
+        0.82, 0.86, 0.92, 0.98,
+        0.92, 0.92, 0.85, 0.85,
+        0.16, 0.16, 0.20, 0.20
     ],
-    
-    # Golden Hour End - Transitioning to sunset (2000-2800K)
+
+    # Golden Hour End - Very warm golden-orange (~1800-2500K)
     "golden_hour_end": [
         0.0, 0.0,
         0.0, 0.0, 0.0, 0.0,
-        0.02, 0.02,
-        0.25, 0.30, 0.40, 0.40,
-        0.80, 0.85, 0.90, 0.95,
-        0.90, 0.90, 0.85, 0.85,
+        0.01, 0.01,
+        0.02, 0.04, 0.10, 0.12,
+        0.76, 0.80, 0.88, 0.95,
+        0.88, 0.88, 0.82, 0.82,
         0.18, 0.18, 0.22, 0.22
     ],
-    
-    # Sunset Start - Deep warm orange (1800-2500K)
+
+    # Sunset Start - Deep warm orange-red (~1800-2200K)
     "sunset_start": [
         0.0, 0.0,
         0.0, 0.0, 0.0, 0.0,
-        0.02, 0.02,
-        0.15, 0.20, 0.30, 0.30,
-        0.70, 0.75, 0.85, 0.90,
-        0.85, 0.85, 0.80, 0.80,
-        0.15, 0.15, 0.18, 0.18
+        0.0, 0.0,
+        0.01, 0.01, 0.04, 0.05,
+        0.58, 0.62, 0.78, 0.88,
+        0.85, 0.85, 0.78, 0.78,
+        0.14, 0.14, 0.18, 0.18
     ],
-    
-    # Sunset Mid - Deep orange to red (1500-2000K)
+
+    # Sunset Mid - Very deep red-orange (~1500-1800K)
     "sunset_mid": [
         0.0, 0.0,
         0.0, 0.0, 0.0, 0.0,
         0.0, 0.0,
-        0.05, 0.08, 0.15, 0.15,
-        0.55, 0.60, 0.75, 0.85,
-        0.90, 0.90, 0.85, 0.85,
-        0.12, 0.12, 0.15, 0.15
+        0.0, 0.0, 0.01, 0.02,
+        0.32, 0.38, 0.62, 0.75,
+        0.88, 0.88, 0.82, 0.82,
+        0.10, 0.10, 0.14, 0.14
     ],
-    
-    # Sunset End - Fading to blue hour (1500-2000K)
+
+    # Sunset End - Fading deep red, sky turning blue (~1500K fading)
     "sunset_end": [
         0.0, 0.0,
-        0.02, 0.05, 0.08, 0.08,
-        0.05, 0.05,
-        0.02, 0.02, 0.05, 0.05,
-        0.35, 0.40, 0.55, 0.65,
-        0.70, 0.70, 0.65, 0.65,
-        0.08, 0.08, 0.10, 0.10
+        0.01, 0.02, 0.04, 0.05,
+        0.04, 0.04,
+        0.01, 0.01, 0.02, 0.03,
+        0.18, 0.22, 0.42, 0.58,
+        0.65, 0.65, 0.60, 0.60,
+        0.07, 0.07, 0.09, 0.09
     ],
-    
-    # Blue Hour Start - Deep blue twilight
+
+    # Blue Hour Start - Deep blue twilight (~8000-12000K)
     "blue_hour_start": [
         0.0, 0.0,
-        0.20, 0.25, 0.40, 0.40,
-        0.20, 0.20,
-        0.03, 0.05, 0.05, 0.05,
-        0.08, 0.10, 0.15, 0.20,
-        0.15, 0.15, 0.12, 0.12,
+        0.18, 0.22, 0.38, 0.38,
+        0.22, 0.22,
+        0.03, 0.04, 0.05, 0.05,
+        0.05, 0.08, 0.12, 0.18,
+        0.12, 0.12, 0.10, 0.10,
         0.0, 0.0, 0.0, 0.0
     ],
-    
-    # Blue Hour Mid - Peak deep blue
+
+    # Blue Hour Mid - Peak deep blue (~10000-15000K)
     "blue_hour_mid": [
         0.0, 0.0,
-        0.25, 0.30, 0.45, 0.45,
-        0.22, 0.22,
-        0.02, 0.03, 0.03, 0.03,
-        0.03, 0.05, 0.08, 0.10,
-        0.08, 0.08, 0.05, 0.05,
+        0.22, 0.28, 0.44, 0.44,
+        0.25, 0.25,
+        0.02, 0.02, 0.03, 0.03,
+        0.02, 0.04, 0.07, 0.10,
+        0.07, 0.07, 0.04, 0.04,
         0.0, 0.0, 0.0, 0.0
     ],
-    
-    # Blue Hour End - Fading to night
+
+    # Blue Hour End - Fading blue to night (~12000-20000K)
     "blue_hour_end": [
         0.0, 0.0,
-        0.15, 0.20, 0.30, 0.30,
-        0.12, 0.12,
-        0.01, 0.02, 0.02, 0.02,
-        0.02, 0.02, 0.05, 0.05,
-        0.03, 0.03, 0.02, 0.02,
+        0.12, 0.16, 0.26, 0.26,
+        0.14, 0.14,
+        0.01, 0.01, 0.01, 0.02,
+        0.01, 0.02, 0.04, 0.05,
+        0.02, 0.02, 0.01, 0.01,
         0.0, 0.0, 0.0, 0.0
     ],
-    
-    # Evening - Returning to night darkness
+
+    # Evening - Fading back to night blue
     "evening": [
         0.0, 0.0,
-        0.05, 0.08, 0.12, 0.12,
+        0.05, 0.07, 0.10, 0.10,
         0.05, 0.05,
-        0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.02, 0.02,
+        0.0, 0.0, 0.01, 0.01,
+        0.0, 0.0, 0.01, 0.01,
         0.0, 0.0, 0.0, 0.0,
         0.0, 0.0, 0.0, 0.0
     ],

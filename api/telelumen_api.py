@@ -345,14 +345,29 @@ class Luminaire:
         return True
     
     def _initialize_device_info(self):
-        """Initialize device information after connection."""
+        """
+        Initialize device information after connection.
+        Each command is independent: a failure on one does not abort the others.
+        """
         try:
             self.firmware_version = self._get_version()
+        except Exception as e:
+            Logger.warning(f"Failed to get firmware version: {e}")
+
+        try:
             self.electronic_serial = self._get_electronic_serial()
+        except Exception as e:
+            Logger.warning(f"Failed to get electronic serial: {e}")
+
+        try:
             self.luminaire_type = self._detect_luminaire_type()
+        except Exception as e:
+            Logger.warning(f"Failed to detect luminaire type: {e}")
+
+        try:
             self.serial_number = self._get_serial_number()
         except Exception as e:
-            Logger.warning(f"Failed to initialize device info: {e}")
+            Logger.warning(f"Failed to get serial number: {e}")
     
     def _send_command(self, command: str) -> Tuple[str, int]:
         """
@@ -708,98 +723,359 @@ class Luminaire:
 # ============================================================================
 
 class Discovery:
-    """Handles luminaire discovery on the network."""
-    
-    @staticmethod
+    """
+    Handles luminaire discovery on the network.
+
+    Faithfully ported from api_tng.py with the same internal functions and
+    logic.  Threading has been removed: all IP scans run sequentially.
+    At the end, IP strings are converted to connected Luminaire objects.
+    """
+
+    # Connection timeout identical to the original api_tng constant
+    TELNET_CONNECTION_TIMEOUT: float = 6.0
+
+    # --- Internal state (mirrors the module-level globals of api_tng) ---
+    _luminaire_network: str = '0.0.0.'
+    _luminaire_list: List[str] = []
+    _refused_list: List[str] = []
+    _telnet_connections: Dict[str, telnetlib.Telnet] = {}
+    _lock = threading.Lock()  # Protects shared state during threaded discovery
+
+    # ------------------------------------------------------------------ #
+    #  Low-level connection helpers (mirrors openConnection / openLuminaire
+    #  / getReply / sendMessage / closeLuminaire from api_tng)
+    # ------------------------------------------------------------------ #
+
+    @classmethod
+    def _open_connection(cls, ip: str, port: int) -> bool:
+        """
+        Create a telnet connection to ip:port.
+        Returns True on success, False on failure.
+        Mirrors api_tng.openConnection().
+        """
+        try:
+            tn = telnetlib.Telnet(ip, port, cls.TELNET_CONNECTION_TIMEOUT)
+            with cls._lock:
+                cls._telnet_connections[ip] = tn
+            Logger.info(f'OK: _open_connection({ip}:{port})')
+            return True
+        except socket.error as exc:
+            if 'Connection refused' in str(exc):
+                with cls._lock:
+                    cls._refused_list.append(ip)
+                #Logger.info(f'FAIL: CONNECTION REFUSED {ip}')
+            #Logger.info(f'FAIL: _open_connection({ip}:{port}): {exc}')
+            return False
+        except Exception as exc:
+            #Logger.info(f'FAIL: _open_connection({ip}:{port}): {exc}')
+            return False
+
+    @classmethod
+    def _open_luminaire(cls, ip: str, port: int) -> bool:
+        """
+        Open a luminaire connection on the given port.
+        Mirrors api_tng.openLuminaire().
+        """
+        try:
+            return cls._open_connection(ip, port)
+        except Exception as exc:
+            Logger.info(f'_open_luminaire({ip}:{port}) exception: {exc}')
+            return False
+
+    @classmethod
+    def _get_reply(cls, ip: str) -> str:
+        """
+        Read a semicolon-terminated reply from the luminaire.
+        Mirrors api_tng.getReply().
+        """
+        try:
+            tn = cls._telnet_connections.get(ip)
+            if tn:
+                return tn.read_until(b';').decode()
+        except Exception as exc:
+            Logger.info(f'_get_reply({ip}) exception: {exc}')
+        return ''
+
+    @classmethod
+    def _send_message(cls, ip: str, msg: str) -> str:
+        """
+        Send a message and return the reply.
+        Mirrors api_tng.sendMessage().
+        """
+        try:
+            tn = cls._telnet_connections.get(ip)
+            if tn:
+                tn.write((msg + '\r').encode())
+                return cls._get_reply(ip)
+        except Exception as exc:
+            Logger.info(f'_send_message({ip}, {msg}) exception: {exc}')
+        return ''
+
+    @classmethod
+    def _close_connection(cls, ip: str):
+        """
+        Close and discard the telnet connection for ip.
+        Mirrors api_tng.closeLuminaire() (connection part only).
+        """
+        try:
+            tn = cls._telnet_connections.pop(ip, None)
+            if tn:
+                tn.close()
+        except Exception:
+            pass
+
+    # ------------------------------------------------------------------ #
+    #  Discovery helpers (mirrors __get_serial_number / addLuminaire /
+    #  removeLuminaire from api_tng)
+    # ------------------------------------------------------------------ #
+
+    @classmethod
+    def _get_serial_number(cls, ip: str):
+        """
+        Request the serial number / NS reply from an already-connected ip.
+        Returns the response string, or False on failure.
+        Mirrors api_tng.__get_serial_number().
+        """
+        try:
+            res = cls._send_message(ip, 'NS')
+            return res if res else False
+        except Exception as exc:
+            Logger.info(f'_get_serial_number({ip}) exception: {exc}')
+            return False
+
+    @classmethod
+    def _add_luminaire(cls, ip: str):
+        """
+        Add ip to the discovered list (de-duplicated, sorted).
+        Mirrors api_tng.addLuminaire().
+        """
+        try:
+            with cls._lock:
+                if ip not in cls._luminaire_list:
+                    cls._luminaire_list.append(ip)
+                    cls._luminaire_list.sort()
+            Logger.info(f'addLuminaire(ip={ip})')
+        except Exception as exc:
+            Logger.info(f'_add_luminaire({ip}) exception: {exc}')
+
+    @classmethod
+    def _remove_luminaire(cls, ip: str):
+        """
+        Remove ip from the discovered list if present.
+        Mirrors api_tng.removeLuminaire().
+        """
+        try:
+            with cls._lock:
+                if ip in cls._luminaire_list:
+                    cls._luminaire_list.remove(ip)
+            #Logger.info(f'removeLuminaire(ip={ip})')
+        except Exception as exc:
+            Logger.info(f'_remove_luminaire({ip}) exception: {exc}')
+
+    # ------------------------------------------------------------------ #
+    #  Discovery poll (mirrors api_tng.__discoveryPoll)
+    # ------------------------------------------------------------------ #
+
+    @classmethod
+    def _discovery_poll(cls, address: int, port: int):
+        """
+        Probe one IP address on the given port.
+        If the device responds with a valid serial number it is added to
+        _luminaire_list and its connection is kept open in _telnet_connections.
+        Otherwise the device is removed from the list and the connection is
+        closed immediately.
+        Mirrors api_tng.__discoveryPoll().
+        """
+        ip = cls._luminaire_network + str(address)
+        valid = False
+        try:
+            if cls._open_luminaire(ip, port):
+                try:
+                    sn = cls._get_serial_number(ip)
+                    if sn is not False and sn:
+                        cls._add_luminaire(ip)
+                        valid = True    # Keep connection open
+                    else:
+                        cls._remove_luminaire(ip)
+                except Exception as exc:
+                    Logger.info(f'_discovery_poll({ip}) inner exception: {exc}')
+                    cls._remove_luminaire(ip)
+            else:
+                cls._remove_luminaire(ip)
+        except Exception as exc:
+            Logger.info(f'_discovery_poll({ip}) exception: {exc}')
+        finally:
+            if not valid:
+                cls._close_connection(ip)
+
+    # ------------------------------------------------------------------ #
+    #  Core discovery (mirrors api_tng.__discover_one / __discover_all)
+    # ------------------------------------------------------------------ #
+
+    @classmethod
+    def _is_alive(cls, tasks: List[threading.Thread]) -> bool:
+        """
+        Return True if any thread in tasks is still running.
+        Mirrors api_tng.is_alive().
+        """
+        try:
+            for t in tasks:
+                if t.is_alive():
+                    return True
+            return False
+        except Exception as exc:
+            Logger.info(f'_is_alive() exception: {exc}')
+            return False
+
+    @classmethod
+    def _discover_one(cls, net: str, port: int) -> List[str]:
+        """
+        Scan every IP on *net* for luminaires on the given port.
+        Faithfully mirrors api_tng.__discover_one():
+          - one thread per IP address (range 2..253 inclusive)
+          - all threads created, then all started
+          - waits with is_alive() + sleep(1.0) loop until all finish
+        """
+        # Close any leftover connections from a previous pass
+        for ip in list(cls._telnet_connections.keys()):
+            cls._close_connection(ip)
+
+        cls._luminaire_list = []
+        cls._refused_list = []
+        cls._luminaire_network = net
+
+        lower_tid = 2
+        upper_tid = 254
+        ip_offset = 0
+
+        #Logger.info(
+        #    f'_discover_one(net={net}, port={port}): creating threads for IPs '
+        #    f'{lower_tid}..{upper_tid - 1}'
+        #)
+
+        # --- Create threads (mirrors: for i in range(...): luminaireTask[i] = Thread(...)) ---
+        tasks: List[threading.Thread] = [None] * upper_tid
+        for i in range(lower_tid, upper_tid):
+            tasks[i] = threading.Thread(
+                target=cls._discovery_poll,
+                args=(i + ip_offset, port),
+                daemon=True
+            )
+
+        # --- Start threads (mirrors: for i in range(...): luminaireTask[i].start()) ---
+        #Logger.info('_discover_one(): starting threads')
+        for i in range(lower_tid, upper_tid):
+            tasks[i].start()
+
+        # --- Wait for completion (mirrors: while is_alive(...): time.sleep(1.0)) ---
+        #Logger.info('_discover_one(): waiting for threads to finish')
+        active = [tasks[i] for i in range(lower_tid, upper_tid)]
+        while cls._is_alive(active):
+            time.sleep(1.0)
+
+        #Logger.info('_discover_one(): all threads finished')
+        cls._luminaire_list.sort()
+        #Logger.info(f'_discover_one() returns: {cls._luminaire_list}')
+        return cls._luminaire_list
+
+    @classmethod
+    def _discover_all(
+        cls,
+        networks: Optional[List[str]] = None,
+        config: Optional[APIConfig] = None
+    ) -> List[str]:
+        """
+        Run the full two-pass discovery across all candidate networks.
+
+        Pass 1 — disconnectRequestPort (57011): forces ARP table population
+                 and wakes the luminaire network stack (connections are expected
+                 to be refused or empty — side-effect is what matters).
+        Pass 2 — luminairePort (57007): real connection + NS validation.
+
+        Returns a list of valid luminaire IP strings (same as api_tng
+        __discover_all).  Stops after the first network that yields results.
+        Mirrors api_tng.__discover_all().
+        """
+        config = config or APIConfig()
+        networks = networks or config.DISCOVERY_NETWORKS
+
+        disconnect_port = config.DISCONNECT_PORT  # 57011
+        luminaire_port  = config.DEFAULT_PORT     # 57007
+
+        Logger.info(f'_discover_all: scanning {len(networks)} network(s)')
+
+        for net in networks:
+            Logger.info(f'Attempting discover on {net}')
+            cls._discover_one(net, disconnect_port)            # Pass 1: ARP wake
+            lumlist = cls._discover_one(net, luminaire_port)   # Pass 2: real connect
+            if lumlist:
+                Logger.info(f'Found luminaires on {net}: {lumlist}')
+                return lumlist
+
+        return []
+
+    # ------------------------------------------------------------------ #
+    #  Public entry point — returns Luminaire objects
+    # ------------------------------------------------------------------ #
+
+    @classmethod
     def discover(
+        cls,
         networks: Optional[List[str]] = None,
         config: Optional[APIConfig] = None
     ) -> List[Luminaire]:
         """
-        Discover all luminaires on specified networks.
-        
+        Discover all luminaires on the network and return ready-to-use
+        Luminaire objects.
+
+        Internally runs _discover_all() (two-pass, sequential, no threads).
+        The raw telnet connections opened during Pass 2 are reused directly —
+        no second TCP handshake is needed.
+
         Args:
-            networks: List of network prefixes to search (e.g., ['192.168.1.'])
-            config: Optional API configuration
-        
+            networks: List of network prefixes to search (e.g. ['192.168.1.'])
+            config:   Optional API configuration
+
         Returns:
-            List of discovered Luminaire objects
+            List of connected and initialised Luminaire objects
         """
         config = config or APIConfig()
-        networks = networks or config.DISCOVERY_NETWORKS
-        
-        Logger.info(f"Discovering luminaires on {len(networks)} network(s)...")
-        
-        discovered_luminaires = []
-        
-        for network in networks:
-            Logger.debug(f"Scanning network {network}...")
-            luminaires = Discovery._scan_network(network, config)
-            
-            if luminaires:
-                Logger.info(f"Found {len(luminaires)} luminaire(s) on {network}")
-                discovered_luminaires.extend(luminaires)
-                # Stop searching other networks once we find luminaires on this network
-                Logger.info(f"Stopping discovery - luminaires found on {network}")
-                break
-            else:
-                Logger.debug(f"No luminaires found on {network}")
-        
-        Logger.success(f"Discovery complete: {len(discovered_luminaires)} luminaire(s) found")
-        return discovered_luminaires
-    
-    @staticmethod
-    def _scan_network(network: str, config: APIConfig) -> List[Luminaire]:
-        """Scan a single network for luminaires."""
-        luminaires = []
-        threads = []
-        lock = threading.Lock()
-        
-        def check_ip(ip: str):
-            """Check if IP has a luminaire."""
-            try:
-                # Try to connect
-                connection = LuminaireConnection(
-                    ip,
-                    config.DEFAULT_PORT,
-                    config.CONNECTION_TIMEOUT
-                )
-                
-                if connection.connect():
-                    # Verify it's a luminaire by getting serial number
-                    try:
-                        response = connection.send_command('NS')
-                        if response and ';' in response:
-                            # Valid luminaire found
-                            luminaire = Luminaire(ip, config)
-                            luminaire.connection = connection
-                            luminaire._initialize_device_info()
-                            print(ip)
-                            
 
-                            with lock:
-                                luminaires.append(luminaire)
-                            
-                            Logger.debug(f"Found luminaire at {ip}")
-                    except:
-                        connection.disconnect()
-            except:
-                pass  # Not a luminaire or not reachable
-        
-        # Create threads for parallel scanning
-        for i in range(config.SCAN_START_IP, config.SCAN_END_IP):
-            ip = f"{network}{i}"
-            thread = threading.Thread(target=check_ip, args=(ip,))
-            threads.append(thread)
-            thread.start()
-        
-        # Wait for all threads with timeout
-        start_time = time.time()
-        for thread in threads:
-            remaining = config.DISCOVERY_TIMEOUT - (time.time() - start_time)
-            if remaining > 0:
-                thread.join(timeout=remaining)
-        
+        Logger.info('Discovering luminaires...')
+        ip_list = cls._discover_all(networks, config)
+
+        if not ip_list:
+            Logger.info('No luminaires found.')
+            return []
+
+        luminaires: List[Luminaire] = []
+        for ip in ip_list:
+            try:
+                luminaire = Luminaire(ip, config)
+
+                # Reuse the live telnet connection that _discover_all kept open
+                tn = cls._telnet_connections.get(ip)
+                if tn:
+                    conn = LuminaireConnection(
+                        ip, config.DEFAULT_PORT, config.CONNECTION_TIMEOUT
+                    )
+                    conn.telnet = tn
+                    conn.state = ConnectionState.CONNECTED
+                    luminaire.connection = conn
+                else:
+                    # Fallback: open a fresh connection
+                    luminaire.connect()
+
+                luminaire._initialize_device_info()
+                luminaires.append(luminaire)
+                Logger.success(f'Luminaire ready at {ip}')
+
+            except Exception as exc:
+                Logger.error(f'Failed to initialise luminaire at {ip}: {exc}')
+
+        Logger.success(
+            f'Discovery complete: {len(luminaires)} luminaire(s) found'
+        )
         return luminaires
 
 

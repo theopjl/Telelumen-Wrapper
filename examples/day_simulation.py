@@ -10,7 +10,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from telelumen_wrapper_clean import Telelumen
+from telelumen_wrapper import Telelumen
 from api.telelumen_api import LuminaireType
 
 

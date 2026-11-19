@@ -6,7 +6,7 @@
 
 **Author:** Théo Poujol  
 **Created:** February 4, 2026  
-**Last Modified:** February 25, 2026
+**Last Modified:** November 18, 2026
 
 ---
 
